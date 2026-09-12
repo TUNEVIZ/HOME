@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TUNEVIZ · 选择播放器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    background: #ffffff;
+    color: #0a0a10;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                 system-ui, 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    transition: opacity .22s ease, transform .22s ease;
+  }
+
+  body.leaving {
+    opacity: 0;
+    transform: translateY(-10px) scale(.985);
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(1000px 520px at 50% -12%, rgba(12, 12, 30, .07), transparent 68%),
+      radial-gradient(720px 460px at 88% 112%, rgba(12, 12, 30, .05), transparent 70%);
+  }
+
+  .stage {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    perspective: 1400px;
+  }
+
+  .eyebrow {
+    margin: 0;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .42em;
+    text-transform: uppercase;
+    color: #b6b6c4;
+    padding-left: .42em;
+  }
+
+  .title {
+    margin: 0;
+    font-size: clamp(38px, 8vw, 54px);
+    font-weight: 800;
+    letter-spacing: -.045em;
+    line-height: 1;
+    background: linear-gradient(180deg, #0a0a10 30%, #4a4a5e 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: float 7s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotateX(0deg); }
+    50%      { transform: translateY(-6px) rotateX(3deg); }
+  }
+
+  .sub {
+    margin: -20px 0 0;
+    font-size: 13px;
+    font-weight: 500;
+    color: #a3a3b2;
+  }
+
+  .switcher {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 7px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ffffff 0%, #f6f6f9 100%);
+    box-shadow:
+      inset 0 0 0 1px rgba(16, 16, 40, .07),
+      inset 0 1px 0 #ffffff,
+      0 2px 4px rgba(16, 16, 40, .04),
+      0 20px 40px -18px rgba(16, 16, 40, .26);
+    transform-style: preserve-3d;
+    transition: transform .35s cubic-bezier(.22, .61, .36, 1);
+    will-change: transform;
+  }
+
+  .glider {
+    position: absolute;
+    top: 7px;
+    left: 0;
+    width: 0;
+    height: calc(100% - 14px);
+    border-radius: 999px;
+    background: linear-gradient(180deg, #23232e 0%, #08080d 100%);
+    box-shadow:
+      0 10px 22px -10px rgba(8, 8, 16, .85),
+      inset 0 1px 0 rgba(255, 255, 255, .22),
+      inset 0 -1px 0 rgba(0, 0, 0, .45);
+    transition:
+      transform .55s cubic-bezier(.34, 1.26, .5, 1),
+      width .55s cubic-bezier(.34, 1.26, .5, 1);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .tab {
+    position: relative;
+    z-index: 1;
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 16px 6px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-align: center;
+    text-decoration: none;
+    color: #9c9caa;
+    white-space: nowrap;
+    transition: color .4s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .tab:hover { color: #55555f; }
+
+  .tab.is-current { color: #ffffff; }
+
+  .tab:focus-visible {
+    outline: 2px solid rgba(109, 124, 255, .8);
+    outline-offset: 3px;
+  }
+
+  .hint {
+    margin: 0;
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: .06em;
+    color: #c0c0ce;
+  }
+
+  @media (max-width: 560px) {
+    body { padding: 44px 16px; }
+    .stage { gap: 24px; }
+    .tab {
+      font-size: 10px;
+      letter-spacing: .1em;
+      padding: 14px 4px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .tab { font-size: 9px; letter-spacing: .05em; padding: 13px 2px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .001ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <main class="stage">
+    <p class="eyebrow">Choose your player</p>
+    <h1 class="title">TUNEVIZ</h1>
+    <p class="sub">三种模式，统一入口</p>
+
+    <nav class="switcher" id="switcher" aria-label="播放器选择">
+      <span class="glider" id="glider" aria-hidden="true"></span>
+      <a class="tab" href="https://TUNEVIZ.github.io/TUNEVIZ">TUNEVIZ</a>
+      <a class="tab" href="https://TUNEVIZ.github.io/TUNEVIZPRO">TUNEVIZPRO</a>
+      <a class="tab" href="https://TUNEVIZ.github.io/TUNEVIZMAX">TUNEVIZMAX</a>
+    </nav>
+
+    <p class="hint">点击任意选项，进入播放器</p>
+  </main>
+
+<script>
+(function () {
+  'use strict';
+
+  var switcher = document.getElementById('switcher');
+  var glider   = document.getElementById('glider');
+  var tabs     = Array.prototype.slice.call(switcher.querySelectorAll('.tab'));
+
+  function place(tab) {
+    if (!tab) return;
+    glider.style.width = tab.offsetWidth + 'px';
+    glider.style.transform = 'translateX(' + tab.offsetLeft + 'px)';
+  }
+
+  function reset() { place(tabs[0]); }
+
+  tabs.forEach(function (tab) {
+    tab.addEventListener('mouseenter', function () { place(tab); });
+    tab.addEventListener('focus',      function () { place(tab); });
+  });
+
+  switcher.addEventListener('mouseleave', reset);
+  switcher.addEventListener('focusout', function (e) {
+    if (!switcher.contains(e.relatedTarget)) reset();
+  });
+
+  var MAX_TILT = 9;
+
+  switcher.addEventListener('mousemove', function (e) {
+    var r  = switcher.getBoundingClientRect();
+    var px = (e.clientX - r.left) / r.width - 0.5;
+    var py = (e.clientY - r.top) / r.height - 0.5;
+
+    switcher.style.transform =
+      'perspective(900px) rotateX(' + (-py * MAX_TILT).toFixed(2) + 'deg)' +
+      ' rotateY(' + (px * MAX_TILT).toFixed(2) + 'deg)';
+  });
+
+  switcher.addEventListener('mouseleave', function () {
+    switcher.style.transform = '';
+  });
+
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function (e) {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+
+      e.preventDefault();
+      document.body.classList.add('leaving');
+
+      window.setTimeout(function () {
+        window.location.href = tab.getAttribute('href');
+      }, 200);
+    });
+  });
+
+  var raf = null;
+
+  window.addEventListener('resize', function () {
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(reset);
+  });
+
+  reset();
+  window.addEventListener('load', reset);
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(reset);
+  }
+})();
+</script>
+
+</body>
+</html>
