@@ -162,18 +162,107 @@
     color: #c0c0ce;
   }
 
+  /* ============ 轻量版按钮 ============ */
+  .lite-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 6px;
+    padding: 12px 22px 12px 18px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    color: #55556a;
+    text-decoration: none;
+    background: linear-gradient(180deg, #fafafd 0%, #f1f1f6 100%);
+    box-shadow:
+      inset 0 0 0 1px rgba(16, 16, 40, .06),
+      inset 0 1px 0 #ffffff,
+      0 1px 2px rgba(16, 16, 40, .04),
+      0 10px 22px -14px rgba(16, 16, 40, .3);
+    transition:
+      color .3s ease,
+      background .35s ease,
+      box-shadow .35s ease,
+      transform .35s cubic-bezier(.34, 1.26, .5, 1);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .lite-btn:hover {
+    color: #0a0a10;
+    background: linear-gradient(180deg, #ffffff 0%, #eaeaf1 100%);
+    box-shadow:
+      inset 0 0 0 1px rgba(16, 16, 40, .1),
+      inset 0 1px 0 #ffffff,
+      0 3px 6px rgba(16, 16, 40, .05),
+      0 16px 30px -16px rgba(16, 16, 40, .38);
+    transform: translateY(-2px);
+  }
+
+  .lite-btn:active {
+    transform: translateY(0) scale(.97);
+  }
+
+  .lite-btn:focus-visible {
+    outline: 2px solid rgba(109, 124, 255, .8);
+    outline-offset: 3px;
+  }
+
+  .lite-btn .dot {
+    flex: 0 0 auto;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #9c9caa;
+    box-shadow: 0 0 0 3px rgba(156, 156, 170, .18);
+    transition: background .3s ease, box-shadow .3s ease;
+  }
+
+  .lite-btn:hover .dot {
+    background: #4ade80;
+    box-shadow: 0 0 0 3px rgba(74, 222, 128, .2);
+  }
+
+  .lite-btn .arrow {
+    flex: 0 0 auto;
+    width: 12px;
+    height: 12px;
+    transition: transform .35s cubic-bezier(.34, 1.26, .5, 1);
+  }
+
+  .lite-btn:hover .arrow { transform: translateX(3px); }
+
+  .lite-btn .arrow svg { width: 100%; height: 100%; display: block; }
+
+  .lite-note {
+    margin: -12px 0 0;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: #d0d0dc;
+  }
+
   @media (max-width: 560px) {
     body { padding: 44px 16px; }
-    .stage { gap: 24px; }
+    .stage { gap: 26px; }
     .tab {
       font-size: 10px;
       letter-spacing: .1em;
       padding: 14px 4px;
     }
+    .lite-btn {
+      font-size: 10.5px;
+      padding: 11px 18px 11px 15px;
+      letter-spacing: .08em;
+    }
   }
 
   @media (max-width: 380px) {
     .tab { font-size: 9px; letter-spacing: .05em; padding: 13px 2px; }
+    .lite-btn { font-size: 10px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -190,16 +279,29 @@
   <main class="stage">
     <p class="eyebrow">Choose your player</p>
     <h1 class="title">TUNEVIZ</h1>
-    <p class="sub">三种模式，请您选择</p>
+    <p class="sub">请您选择模式</p>
 
     <nav class="switcher" id="switcher" aria-label="播放器选择">
       <span class="glider" id="glider" aria-hidden="true"></span>
-      <a class="tab" href="https://TUNEVIZ.github.io/TUNEVIZ">TUNEVIZ</a>
-      <a class="tab" href="https://TUNEVIZ.github.io/TUNEVIZPRO">TUNEVIZPRO</a>
-      <a class="tab" href="https://TUNEVIZ.github.io/TUNEVIZMAX">TUNEVIZMAX</a>
+      <a class="tab" href="https://tuneviz.github.io/TUNEVIZ">TUNEVIZ</a>
+      <a class="tab" href="https://tuneviz.github.io/TUNEVIZPRO">TUNEVIZPRO</a>
+      <a class="tab" href="https://tuneviz.github.io/TUNEVIZMAX">TUNEVIZMAX</a>
     </nav>
 
     <p class="hint">点击任意选项，进入播放器</p>
+
+    <a class="lite-btn" id="liteBtn" href="https://tuneviz.github.io/TUNEVIZ_LOW">
+      <span class="dot" aria-hidden="true"></span>
+      <span>如果配置较低，请点击此处切换轻量版播放器</span>
+      <span class="arrow" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 5l7 7-7 7"/>
+        </svg>
+      </span>
+    </a>
+
+    <p class="lite-note">Lightweight Mode</p>
   </main>
 
 <script>
@@ -209,6 +311,7 @@
   var switcher = document.getElementById('switcher');
   var glider   = document.getElementById('glider');
   var tabs     = Array.prototype.slice.call(switcher.querySelectorAll('.tab'));
+  var liteBtn  = document.getElementById('liteBtn');
 
   function place(tab) {
     if (!tab) return;
@@ -244,18 +347,22 @@
     switcher.style.transform = '';
   });
 
+  function softNavigate(link, e) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    document.body.classList.add('leaving');
+    window.setTimeout(function () {
+      window.location.href = link.href;
+    }, 200);
+  }
+
   tabs.forEach(function (tab) {
-    tab.addEventListener('click', function (e) {
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-
-      e.preventDefault();
-      document.body.classList.add('leaving');
-
-      window.setTimeout(function () {
-        window.location.href = tab.getAttribute('href');
-      }, 200);
-    });
+    tab.addEventListener('click', function (e) { softNavigate(tab, e); });
   });
+
+  if (liteBtn) {
+    liteBtn.addEventListener('click', function (e) { softNavigate(liteBtn, e); });
+  }
 
   var raf = null;
 
